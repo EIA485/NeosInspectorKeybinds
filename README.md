@@ -2,7 +2,9 @@
 
 A [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod for [Neos VR](https://neos.com/) that adds some keybinds to the inspector
 
-### default binds
+
+config options to change each bind exist. to disable a keybind clear all it's keys. the dicts state what keys must be in what state for the bind to trigger. the first element of the dict is the one that will trigger the rest of the states to be checked.
+## defaults:
 -`c` create child under selected obj
 -`alt + c` create child under current root
 -`h` create parent
