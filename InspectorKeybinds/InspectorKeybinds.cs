@@ -33,14 +33,22 @@ namespace InspectorKeybinds
         static Keybind[] binds = new Keybind[] {
             new(new("create child", computeDefault: ()=>new(){new(){{Key.C, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnAddChildPressed")),
             new(new("create child under view root", computeDefault: ()=>new(){new(){{Key.C, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.CreateObjUnderViewRoot))),
-            new(new("create parent", computeDefault: ()=>new(){new(){{Key.H, true}}}), AccessTools.Method(typeof(SceneInspector), "OnInsertParentPressed")),
+            new(new("create parent", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Control, false}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnInsertParentPressed")),
             new(new("duplicate", computeDefault: ()=>new(){new(){{Key.G, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDuplicatePressed")),
             new(new("object root", computeDefault: ()=>new(){new(){{Key.Y, true}}}), AccessTools.Method(typeof(SceneInspector), "OnObjectRootPressed")),
             new(new("up one root", computeDefault: ()=>new(){new(){{Key.U, true}}}), AccessTools.Method(typeof(SceneInspector), "OnRootUpPressed")),
-            new(new("focus", computeDefault: ()=>new(){new(){{Key.J, true}}}), AccessTools.Method(typeof(SceneInspector), "OnSetRootPressed")),
-            new(new("destroy", computeDefault: ()=>new(){new(){{Key.Backspace, true},{ Key.Alt, false} }}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPreservingAssetsPressed")),
-            new(new("destroy No Preserve Assets", computeDefault: ()=>new(){new(){{Key.Backspace, true},{ Key.Alt, true} }}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPressed")),
-            new(new("open component attacher", computeDefault: ()=>new(){new(){{Key.V, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.OpenAttacher)))
+            new(new("focus", computeDefault: ()=>new(){new(){{Key.H, true}}}), AccessTools.Method(typeof(SceneInspector), "OnSetRootPressed")),
+            new(new("destroy", computeDefault: ()=>new(){new(){{Key.Backspace, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPreservingAssetsPressed")),
+            new(new("destroy No Preserve Assets", computeDefault: ()=>new(){new(){{Key.Backspace, true},{Key.Alt, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPressed")),
+            new(new("open component attacher", computeDefault: ()=>new(){new(){{Key.V, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.OpenAttacher))),
+            new(new("bring to", computeDefault: ()=>new(){new(){{Key.B, true}, {Key.Control, false}}}), AccessTools.Method(typeof(Slot), "BringTo")),
+            new(new("jump to", computeDefault: ()=>new(){new(){{Key.B, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "JumpTo")),
+            new(new("reset position", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(Slot), "ResetPosition")),
+            new(new("reset rotation", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetRotation")),
+            new(new("reset scale", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, false}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetScale")),
+            new(new("parent under world root", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderWorldRoot")),
+            new(new("parent under local user space", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderLocalUserSpace")),
+            new(new("create pivot", computeDefault: ()=>new(){new(){{Key.P, true}}}), AccessTools.Method(typeof(Slot), "OnCreatePivotAtCenter"))
         };
 
         static object[] nullargs = new object[2];
@@ -119,6 +127,11 @@ namespace InspectorKeybinds
                             else if (method.DeclaringType == typeof(ExtraBinds))
                             {
                                 method.Invoke(null, new object[] { inspector });
+                            }
+                            else if(method.DeclaringType == typeof(Slot))
+                            {
+                                if (inspector.ComponentView.Target == null) return;
+                                method.Invoke(inspector.ComponentView.Target, nullargs);
                             }
                         }
                     });
