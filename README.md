@@ -6,7 +6,7 @@ A [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod for [Neos VR](https
 config options to change each bind exist. to disable a keybind clear all it's keys. the dicts state what keys must be in what state for the bind to trigger. the first element of the dict is the one that will trigger the rest of the states to be checked.
 ## defaults:
 - `c` create child under selected obj
-- `alt + c` create child under current root
+- `c + alt` create child under current root
 - `j` create parent
 - `j + ctrl` parent under world root
 - `j + alt` parent under local user space
@@ -16,7 +16,7 @@ config options to change each bind exist. to disable a keybind clear all it's ke
 - `u` up one object
 - `h` focus
 - `backspace` delete
-- `alt + backspace` delete no preserve assets
+- `backspace + alt` delete no preserve assets
 - `v` open component attacher
 - `b` bring to
 - `b + alt` jump to
