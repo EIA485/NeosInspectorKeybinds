@@ -10,7 +10,6 @@ config options to change each bind exist. to disable a keybind clear all it's ke
 - `j` create parent
 - `j + ctrl` parent under world root
 - `j + alt` parent under local user space
-- `j` create parent
 - `g` duplicate
 - `y` object root
 - `u` up one object
