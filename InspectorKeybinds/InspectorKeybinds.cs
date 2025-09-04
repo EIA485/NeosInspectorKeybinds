@@ -1,55 +1,60 @@
-﻿using FrooxEngine;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using BepInEx.NET.Common;
+using BepInExResoniteShim;
+using Elements.Core;
+using FrooxEngine;
 using FrooxEngine.UIX;
 using HarmonyLib;
-using NeosModLoader;
-using BaseX;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Renderite.Shared;
 using System.Reflection;
+using System.Text.Json;
 
 namespace InspectorKeybinds
 {
-    public class InspectorKeybinds : NeosMod
+    [ResonitePlugin(PluginMetadata.GUID, PluginMetadata.NAME, PluginMetadata.VERSION, PluginMetadata.AUTHORS, PluginMetadata.REPOSITORY_URL)]
+    [BepInDependency(BepInExResoniteShim.PluginMetadata.GUID)]
+    public class InspectorKeybinds : BasePlugin
     {
-        public override string Name => "InspectorKeybinds";
-        public override string Author => "eia485";
-        public override string Version => "1.0.0";
-        public override string Link => "https://github.com/EIA485/NeosInspectorKeybinds/";
-        public override void OnEngineInit()
+        static ConfigFile config;
+        static ManualLogSource log;
+        static Keybind[] binds;
+
+        public override void Load()
         {
-            config = GetConfiguration();
-            Harmony harmony = new Harmony("net.eia485.InspectorKeybinds");
-            harmony.PatchAll();
+            config = Config;
+            log = Log;
+            
+            var tc = new TypeConverter();
+            tc.ConvertToString = (obj, type) => JsonSerializer.Serialize(obj);
+            tc.ConvertToObject = (str, type) => JsonSerializer.Deserialize(str, type);
+            TomlTypeConverter.AddConverter(typeof(List<Dictionary<Key, bool>>), tc);
+
+            binds = new Keybind[] {
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "create child", new(){new(){{Key.C, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnAddChildPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "create child under view root",new(){new(){{Key.C, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.CreateObjUnderViewRoot))),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "create parent",new(){new(){{Key.J, true}, {Key.Control, false}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnInsertParentPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "duplicate",new(){new(){{Key.G, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDuplicatePressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "object root",new(){new(){{Key.Y, true}}}), AccessTools.Method(typeof(SceneInspector), "OnObjectRootPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "up one root",new(){new(){{Key.U, true}}}), AccessTools.Method(typeof(SceneInspector), "OnRootUpPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "focus",new(){new(){{Key.H, true}}}), AccessTools.Method(typeof(SceneInspector), "OnSetRootPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "destroy",new(){new(){{Key.Backspace, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPreservingAssetsPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "destroy No Preserve Assets",new(){new(){{Key.Backspace, true},{Key.Alt, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPressed")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "open component attacher",new(){new(){{Key.V, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.OpenAttacher))),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "bring to",new(){new(){{Key.B, true}, {Key.Control, false}}}), AccessTools.Method(typeof(Slot), "BringTo")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "jump to",new(){new(){{Key.B, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "JumpTo")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "reset position",new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(Slot), "ResetPosition")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "reset rotation",new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetRotation")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "reset scale",new(){new(){{Key.R, true}, {Key.Control, false}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetScale")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "parent under world root",new(){new(){{Key.J, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderWorldRoot")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "parent under local user space",new(){new(){{Key.J, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderLocalUserSpace")),
+            new(config.Bind<List<Dictionary<Key, bool>>>(PluginMetadata.NAME, "create pivot",new(){new(){{Key.P, true}}}), AccessTools.Method(typeof(Slot), "OnCreatePivotAtCenter"))
+            };
+
+            HarmonyInstance.PatchAll();
         }
-        static ModConfiguration config;
-        public override void DefineConfiguration(ModConfigurationDefinitionBuilder builder)
-        {
-            foreach (var bind in binds)
-            {
-                builder.Key(bind.configKey);
-            }
-        }
-        static Keybind[] binds = new Keybind[] {
-            new(new("create child", computeDefault: ()=>new(){new(){{Key.C, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnAddChildPressed")),
-            new(new("create child under view root", computeDefault: ()=>new(){new(){{Key.C, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.CreateObjUnderViewRoot))),
-            new(new("create parent", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Control, false}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnInsertParentPressed")),
-            new(new("duplicate", computeDefault: ()=>new(){new(){{Key.G, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDuplicatePressed")),
-            new(new("object root", computeDefault: ()=>new(){new(){{Key.Y, true}}}), AccessTools.Method(typeof(SceneInspector), "OnObjectRootPressed")),
-            new(new("up one root", computeDefault: ()=>new(){new(){{Key.U, true}}}), AccessTools.Method(typeof(SceneInspector), "OnRootUpPressed")),
-            new(new("focus", computeDefault: ()=>new(){new(){{Key.H, true}}}), AccessTools.Method(typeof(SceneInspector), "OnSetRootPressed")),
-            new(new("destroy", computeDefault: ()=>new(){new(){{Key.Backspace, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPreservingAssetsPressed")),
-            new(new("destroy No Preserve Assets", computeDefault: ()=>new(){new(){{Key.Backspace, true},{Key.Alt, true}}}), AccessTools.Method(typeof(SceneInspector), "OnDestroyPressed")),
-            new(new("open component attacher", computeDefault: ()=>new(){new(){{Key.V, true}}}), AccessTools.Method(typeof(ExtraBinds), nameof(ExtraBinds.OpenAttacher))),
-            new(new("bring to", computeDefault: ()=>new(){new(){{Key.B, true}, {Key.Control, false}}}), AccessTools.Method(typeof(Slot), "BringTo")),
-            new(new("jump to", computeDefault: ()=>new(){new(){{Key.B, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "JumpTo")),
-            new(new("reset position", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, false}}}), AccessTools.Method(typeof(Slot), "ResetPosition")),
-            new(new("reset rotation", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetRotation")),
-            new(new("reset scale", computeDefault: ()=>new(){new(){{Key.R, true}, {Key.Control, false}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ResetScale")),
-            new(new("parent under world root", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Control, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderWorldRoot")),
-            new(new("parent under local user space", computeDefault: ()=>new(){new(){{Key.J, true}, {Key.Alt, true}}}), AccessTools.Method(typeof(Slot), "ParentUnderLocalUserSpace")),
-            new(new("create pivot", computeDefault: ()=>new(){new(){{Key.P, true}}}), AccessTools.Method(typeof(Slot), "OnCreatePivotAtCenter"))
-        };
+
 
         static object[] nullargs = new object[2];
         [HarmonyPatch(typeof(Userspace), "OnCommonUpdate")]
@@ -97,7 +102,7 @@ namespace InspectorKeybinds
 
                     foreach (var bind in binds)
                     {
-                        foreach (var keyset in config.GetValue(bind.configKey))
+                        foreach (var keyset in bind.configKey.Value)
                         {
                             if (keyset.Count == 0) continue;
                             var enu = keyset.GetEnumerator();
@@ -136,11 +141,11 @@ namespace InspectorKeybinds
                         }
                     });
                 }
-                catch (Exception e) { Error(e); } // we dont want to disable the userspace component if we throw an exception
+                catch (Exception e) { log.LogError(e); } // we dont want to disable the userspace component if we throw an exception
             }
 
         }
-        static CommonTool GetCommonTool(UserRoot userRoot, Chirality side) => userRoot.GetRegisteredComponent((CommonTool t) => t.Side.Value == side);
+        static InteractionHandler GetCommonTool(UserRoot userRoot, Chirality side) => userRoot.GetRegisteredComponent((InteractionHandler t) => t.Side.Value == side);
         static Chirality GetOther(Chirality cur) => cur == Chirality.Right ? Chirality.Left : Chirality.Right;
         static class ExtraBinds
         {
@@ -155,8 +160,8 @@ namespace InspectorKeybinds
         struct Keybind
         {
             public MethodInfo target;
-            public ModConfigurationKey<List<Dictionary<Key, bool>>> configKey;
-            internal Keybind(ModConfigurationKey<List<Dictionary<Key, bool>>> configKey, MethodInfo target)
+            public ConfigEntry<List<Dictionary<Key, bool>>> configKey;
+            internal Keybind(ConfigEntry<List<Dictionary<Key, bool>>> configKey, MethodInfo target)
             {
                 this.configKey = configKey;
                 this.target = target;
