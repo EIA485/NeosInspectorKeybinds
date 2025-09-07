@@ -25,7 +25,6 @@ namespace InspectorKeybinds
         {
             config = Config;
             log = Log;
-            
             var tc = new TypeConverter();
             tc.ConvertToString = (obj, type) => JsonSerializer.Serialize(obj);
             tc.ConvertToObject = (str, type) => JsonSerializer.Deserialize(str, type);
@@ -84,12 +83,12 @@ namespace InspectorKeybinds
                         bool hit = false;
                         var localUserRoot = __instance.Engine.WorldManager.FocusedWorld?.LocalUser.Root;
                         var primaryTool = GetCommonTool(localUserRoot, input.PrimaryHand);
-                        hit = primaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(primaryTool.Laser.CurrentInteractionTarget.GetType());
+                        hit = primaryTool != null && primaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(primaryTool.Laser.CurrentInteractionTarget.GetType());
                         if (hit) tool = primaryTool;
                         else if (input.VR_Active)
                         {
                             var secondaryTool = GetCommonTool(localUserRoot, GetOther(input.PrimaryHand));
-                            hit = secondaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(secondaryTool.Laser.CurrentInteractionTarget.GetType());
+                            hit = secondaryTool != null && secondaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(secondaryTool.Laser.CurrentInteractionTarget.GetType());
                             if (hit) tool = secondaryTool;
                             else return;
                         }
@@ -133,7 +132,7 @@ namespace InspectorKeybinds
                             {
                                 method.Invoke(null, new object[] { inspector });
                             }
-                            else if(method.DeclaringType == typeof(Slot))
+                            else if (method.DeclaringType == typeof(Slot))
                             {
                                 if (inspector.ComponentView.Target == null) return;
                                 method.Invoke(inspector.ComponentView.Target, nullargs);
@@ -145,7 +144,17 @@ namespace InspectorKeybinds
             }
 
         }
-        static InteractionHandler GetCommonTool(UserRoot userRoot, Chirality side) => userRoot.GetRegisteredComponent((InteractionHandler t) => t.Side.Value == side);
+        static InteractionHandler? GetCommonTool(UserRoot userRoot, Chirality side)
+        {
+            try
+            {
+                return userRoot.GetRegisteredComponent((InteractionHandler t) => t.Side.Value == side);
+            }
+            catch
+            {
+                return null;
+            }
+        }
         static Chirality GetOther(Chirality cur) => cur == Chirality.Right ? Chirality.Left : Chirality.Right;
         static class ExtraBinds
         {
