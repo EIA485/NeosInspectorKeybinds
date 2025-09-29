@@ -113,7 +113,7 @@ namespace InspectorKeybinds
 
                     var inspector = tool.Laser.CurrentInteractionTarget?.Slot?.GetComponentInChildrenOrParents<SceneInspector>();
                     if (inspector == null) return;
-                    List<MethodInfo> runOnMain = new List<MethodInfo>();
+                    List<MethodInfo> runOnMain = new();
 
                     foreach (var bind in binds)
                     {

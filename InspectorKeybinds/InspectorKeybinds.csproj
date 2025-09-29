@@ -23,12 +23,9 @@
 		<GamePath Condition="Exists('E:\Games\Steam\steamapps\common\Resonite\')">E:\Games\Steam\steamapps\common\Resonite\</GamePath>
 	</PropertyGroup>
 
-    <ItemGroup>
+	<ItemGroup>
         <PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*"/>
         <PackageReference Include="ResoniteModding.BepInExResoniteShim" Version="0.8.*"/>
-    </ItemGroup>
-
-	<ItemGroup>
 		<Reference Include="FrooxEngine">
 		    <HintPath>$(GamePath)FrooxEngine.dll</HintPath>
 		</Reference>
