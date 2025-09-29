@@ -24,26 +24,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*" />
-		<Reference Include="0Harmony">
-			<HintPath>$(GamePath)BepInEx\core\0Harmony.dll</HintPath>
-		</Reference>
-		<Reference Include="BepInEx.Core">
-			<HintPath>$(GamePath)BepInEx\core\BepInEx.Core.dll</HintPath>
-		</Reference>
-		<Reference Include="BepInEx.NET.Common">
-			<HintPath>$(GamePath)BepInEx\core\BepInEx.NET.Common.dll</HintPath>
-		</Reference>
-		<Reference Include="BepInExResoniteShim">
-			<HintPath>$(GamePath)BepInEx\plugins\BepInExResoniteShim.dll</HintPath>
-		</Reference>
+        <PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*"/>
+        <PackageReference Include="ResoniteModding.BepInExResoniteShim" Version="0.8.*"/>
 		<Reference Include="FrooxEngine">
 		    <HintPath>$(GamePath)FrooxEngine.dll</HintPath>
 		</Reference>
 		<Reference Include="Elements.Core">
 			<HintPath>$(GamePath)Elements.Core.dll</HintPath>
 		</Reference>
-		<Reference Include="Renderite.Sharede">
+		<Reference Include="Renderite.Shared">
 		    <HintPath>$(GamePath)Renderite.Shared.dll</HintPath>
 		</Reference>
 	</ItemGroup>
