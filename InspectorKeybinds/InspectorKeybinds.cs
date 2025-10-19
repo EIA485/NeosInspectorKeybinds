@@ -158,7 +158,7 @@ namespace InspectorKeybinds
                 }
                 catch (Exception e) { log.LogError(e); } // we dont want to disable the userspace component if we throw an exception
             }
-            
+
         }
         static InteractionHandler? GetCommonTool(UserRoot userRoot, Chirality side)
         {
@@ -175,9 +175,12 @@ namespace InspectorKeybinds
         static class ExtraBinds
         {
             static MethodInfo OnAttachComponentPressed = AccessTools.Method(typeof(SceneInspector), "OnAttachComponentPressed");
-            internal static void OpenAttacher(SceneInspector instance) => OnAttachComponentPressed.Invoke(instance, new object[] { null, new ButtonEventData(null, instance.Slot.GlobalPosition, float2.Zero, float2.Zero) });
+            internal static void OpenAttacher(SceneInspector instance)
+                => OnAttachComponentPressed.Invoke(instance, new object[] { null, new ButtonEventData(null, instance.Slot.GlobalPosition, float2.Zero, float2.Zero) });
             internal static void CreateObjUnderViewRoot(SceneInspector instance) => instance.Root.Target?.AddSlot(instance.Root.Target.Name + " - Child");
         }
+
+
 
         struct Keybind
         {
