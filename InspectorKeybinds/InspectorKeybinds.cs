@@ -64,14 +64,22 @@ namespace InspectorKeybinds
                 try
                 {
                     var input = __instance.InputInterface;
+                    if (input == null) return;
+
                     if (!input.GetAnyKey() || Userspace.HasFocus || __instance.Engine.WorldManager.FocusedWorld?.LocalUser.HasActiveFocus() == true) return;
 
                     var primaryHand = Userspace.GetControllerData(input.PrimaryHand);
+                    if (primaryHand == null) return;
+
                     var tool = primaryHand.userspaceController;
+                    if (tool == null) return;
+
                     bool userSpaceHit = primaryHand.userspaceLaserHitTarget;
                     if (!userSpaceHit && input.VR_Active)
                     {
                         var secondaryHand = Userspace.GetControllerData(GetOther(input.PrimaryHand));
+                        if (secondaryHand == null) return;
+
                         if (secondaryHand.userspaceLaserHitTarget)
                         {
                             tool = secondaryHand.userspaceController;
@@ -82,20 +90,26 @@ namespace InspectorKeybinds
                     {
                         bool hit = false;
                         var localUserRoot = __instance.Engine.WorldManager.FocusedWorld?.LocalUser.Root;
+                        if (localUserRoot == null) return;
+
                         var primaryTool = GetCommonTool(localUserRoot, input.PrimaryHand);
-                        hit = primaryTool != null && primaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(primaryTool.Laser.CurrentInteractionTarget.GetType());
+                        if (primaryTool == null || primaryTool.Laser == null || primaryTool.Laser.CurrentInteractionTarget == null) return;
+
+                        hit = primaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(primaryTool.Laser.CurrentInteractionTarget.GetType());
                         if (hit) tool = primaryTool;
                         else if (input.VR_Active)
                         {
                             var secondaryTool = GetCommonTool(localUserRoot, GetOther(input.PrimaryHand));
-                            hit = secondaryTool != null && secondaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(secondaryTool.Laser.CurrentInteractionTarget.GetType());
+                            if (secondaryTool == null || secondaryTool.Laser == null || secondaryTool.Laser.CurrentInteractionTarget == null) return;
+
+                            hit = secondaryTool.Laser.CurrentInteractionTarget != null && typeof(Canvas).IsAssignableFrom(secondaryTool.Laser.CurrentInteractionTarget.GetType());
                             if (hit) tool = secondaryTool;
                             else return;
                         }
                         else return;
                     }
-                    var inspector = tool.Laser.CurrentInteractionTarget.Slot.GetComponentInChildrenOrParents<SceneInspector>();
 
+                    var inspector = tool.Laser.CurrentInteractionTarget?.Slot?.GetComponentInChildrenOrParents<SceneInspector>();
                     if (inspector == null) return;
                     List<MethodInfo> runOnMain = new();
 
@@ -124,7 +138,9 @@ namespace InspectorKeybinds
                     {
                         foreach (MethodInfo method in runOnMain)
                         {
-                            if (method.DeclaringType == typeof(SceneInspector)) //cant do a type switch ):::
+                            if (method?.DeclaringType == null) continue;
+
+                            if (method.DeclaringType == typeof(SceneInspector)) // cant do a type switch ):::
                             {
                                 method.Invoke(inspector, nullargs);
                             }
@@ -134,7 +150,7 @@ namespace InspectorKeybinds
                             }
                             else if (method.DeclaringType == typeof(Slot))
                             {
-                                if (inspector.ComponentView.Target == null) return;
+                                if (inspector.ComponentView.Target == null) continue;
                                 method.Invoke(inspector.ComponentView.Target, nullargs);
                             }
                         }
