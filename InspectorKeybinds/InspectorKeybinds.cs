@@ -27,7 +27,7 @@ namespace InspectorKeybinds
             log = Log;
             var tc = new TypeConverter();
             tc.ConvertToString = (obj, type) => JsonSerializer.Serialize(obj);
-            tc.ConvertToObject = (str, type) => JsonSerializer.Deserialize(str, type);
+            tc.ConvertToObject = (str, type) => str.IsNullOrWhiteSpace() ? Activator.CreateInstance(type) : JsonSerializer.Deserialize(str, type);
             TomlTypeConverter.AddConverter(typeof(List<Dictionary<Key, bool>>), tc);
 
             binds = new Keybind[] {

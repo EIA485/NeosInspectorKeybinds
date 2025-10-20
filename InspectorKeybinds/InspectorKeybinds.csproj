@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*" />
+		<PackageReference Include="ResoniteModding.BepInExResoniteShim" Version="*" />
 		<Reference Include="0Harmony">
 			<HintPath>$(GamePath)BepInEx\core\0Harmony.dll</HintPath>
 		</Reference>
@@ -33,9 +34,6 @@
 		</Reference>
 		<Reference Include="BepInEx.NET.Common">
 			<HintPath>$(GamePath)BepInEx\core\BepInEx.NET.Common.dll</HintPath>
-		</Reference>
-		<Reference Include="BepInExResoniteShim">
-			<HintPath>$(GamePath)BepInEx\plugins\BepInExResoniteShim.dll</HintPath>
 		</Reference>
 		<Reference Include="FrooxEngine">
 		    <HintPath>$(GamePath)FrooxEngine.dll</HintPath>
